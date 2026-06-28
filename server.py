@@ -95,6 +95,11 @@ class PredictionService:
         class_index = int(probs.top1)
         confidence = float(probs.top1conf)
         class_name = results[0].names[class_index]
+        print(
+            f"预测结果: {class_name} / {translate_class_name(class_name)}, "
+            f"置信度: {confidence:.4f}",
+            flush=True,
+        )
         return {
             "class_name": class_name,
             "label": translate_class_name(class_name),
