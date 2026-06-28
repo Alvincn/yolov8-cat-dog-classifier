@@ -49,6 +49,12 @@ python scripts/prepare_dataset.py
 python scripts/train.py
 ```
 
+训练时默认使用 `device=mps`，意思是让 PyTorch 尽量使用 Apple Silicon 的图形/神经计算能力，而不是只用 CPU。如果你的环境不支持 MPS，可以改成：
+
+```bash
+python scripts/train.py --device cpu
+```
+
 训练完成后，最好的模型通常会保存在：
 
 ```text
