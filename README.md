@@ -13,39 +13,31 @@
 
 原始数据不会被修改。脚本会把可用图片复制到 `data/cat_dog_cls`，并自动拆分训练集和验证集。
 
-## 安装依赖
+## Conda 环境
 
-建议使用 Python 3.11 或 3.12 创建虚拟环境。当前机器默认 Python 是 3.14；本项目已经在这台机器的 Python 3.14 虚拟环境里完成了依赖安装和 YOLOv8 冒烟训练，但如果你以后遇到兼容性问题，优先换成 Python 3.11 或 3.12。
+不要直接使用全局 Python 环境训练。当前电脑的 Conda 里已经有一个 YOLOv8 环境，名字是 `yolo8`。
 
-先检查你是否已经安装了合适的 Python：
+我已经验证过这个环境：
 
-```bash
-python3.12 --version
-python3.11 --version
-```
+- Python: 3.8.20
+- Ultralytics: 8.4.80
+- Torch: 2.4.1
+- MPS: 不可用，所以默认继续用 CPU 训练
 
-如果其中一个命令能正常显示版本号，就用对应版本创建虚拟环境。下面以 `python3.12` 为例：
-
-```bash
-python3.12 -m venv .venv
-source .venv/bin/activate
-python -m pip install -U pip
-python -m pip install -r requirements.txt
-```
-
-如果你的电脑暂时只有 `python3`，也可以这样创建当前项目的虚拟环境：
+你可以这样确认环境是否存在：
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -U pip
-python -m pip install -r requirements.txt
+conda env list
+conda run -n yolo8 python --version
+conda run -n yolo8 python -c "import ultralytics; print(ultralytics.__version__)"
 ```
+
+项目里仍然保留 `requirements.txt`，它只是依赖清单和备用参考；正式训练和预测请使用 `yolo8` Conda 环境。
 
 ## 准备数据
 
 ```bash
-python scripts/prepare_dataset.py
+conda run -n yolo8 python scripts/prepare_dataset.py
 ```
 
 这一步会检查图片能不能被正常打开，然后把可用图片复制到 YOLOv8 分类训练需要的目录结构里。
@@ -58,15 +50,21 @@ python scripts/prepare_dataset.py
 ## 训练模型
 
 ```bash
-python scripts/train.py
+./scripts/train_yolo8_conda.sh
 ```
 
-当前脚本默认使用 `device=cpu`。原因是这台机器上已经验证过 Torch 可以训练，但 `torch.backends.mps.is_available()` 返回 `False`，也就是当前 Python/Torch 环境暂时不能使用 Apple Silicon 的 MPS 加速。
+上面这个包装脚本内部实际执行的是：
+
+```bash
+conda run -n yolo8 python scripts/train.py
+```
+
+当前脚本默认使用 `device=cpu`。原因是 `yolo8` Conda 环境中已经验证过 Torch 可以训练，但 `torch.backends.mps.is_available()` 返回 `False`，也就是当前 Conda 环境暂时不能使用 Apple Silicon 的 MPS 加速。
 
 如果你之后换了支持 MPS 的 PyTorch 环境，可以这样尝试加速：
 
 ```bash
-python scripts/train.py --device mps
+./scripts/train_yolo8_conda.sh --device mps
 ```
 
 如果 MPS 报错，就继续使用默认 CPU。CPU 会慢一些，但更稳定。
@@ -80,7 +78,7 @@ runs/classify/cat_dog_yolov8n/weights/best.pt
 ## 预测单张图片
 
 ```bash
-python scripts/predict.py dataset/PetImages/Cat/0.jpg
+./scripts/predict_yolo8_conda.sh dataset/PetImages/Cat/0.jpg
 ```
 
 脚本会输出模型认为这张图片是 `Cat` 还是 `Dog`，以及对应置信度。
@@ -88,13 +86,13 @@ python scripts/predict.py dataset/PetImages/Cat/0.jpg
 预测脚本默认读取训练输出中的 `best.pt`。如果你的模型文件在其他位置，可以这样指定：
 
 ```bash
-python scripts/predict.py path/to/image.jpg --model path/to/best.pt
+./scripts/predict_yolo8_conda.sh path/to/image.jpg --model path/to/best.pt
 ```
 
 如果你用 MPS 训练出了模型，也可以预测时指定 MPS：
 
 ```bash
-python scripts/predict.py path/to/image.jpg --model path/to/best.pt --device mps
+./scripts/predict_yolo8_conda.sh path/to/image.jpg --model path/to/best.pt --device mps
 ```
 
 ## 已完成的本地验证

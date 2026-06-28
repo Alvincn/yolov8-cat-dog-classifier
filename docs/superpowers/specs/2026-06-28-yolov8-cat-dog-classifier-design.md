@@ -1,104 +1,133 @@
-# YOLOv8 Cat/Dog Classifier Design
+# YOLOv8 猫狗分类器设计文档
 
-## Goal
+## 目标
 
-Build a small, reproducible YOLOv8 classification project that trains a model to decide whether an image contains a cat or a dog.
+搭建一个可以在本机 Mac 上训练的 YOLOv8 分类项目，用来判断一张动物图片是猫还是狗。
 
-The project will train locally on this MacBook Pro with Apple M4 and 16 GB memory. It will use Ultralytics YOLOv8 classification weights, starting with `yolov8n-cls.pt`, and target Apple Silicon MPS acceleration through `device=mps`.
+本项目使用 Ultralytics YOLOv8 的分类权重 `yolov8n-cls.pt`。当前训练和预测都应使用 Conda 环境 `yolo8`，不要直接使用全局 Python 环境。
 
-## Existing Dataset
+## 当前 Conda 环境
 
-The raw dataset is already present in the repository:
+已确认当前机器存在 Conda 环境：
 
-- `dataset/PetImages/Cat`: 12,500 JPG files
-- `dataset/PetImages/Dog`: 12,500 JPG files
+- 环境名：`yolo8`
+- Python：3.8.20
+- Ultralytics：8.4.80
+- Torch：2.4.1
+- MPS：不可用
 
-The dataset also contains non-image `Thumbs.db` files. This dataset is known to include occasional corrupt images, so preparation must verify that files can be opened before using them for training.
+因此脚本默认使用 `device=cpu`。如果以后 `yolo8` 环境或新的 Conda 环境支持 MPS，可以手动传入 `--device mps`。
 
-The raw dataset will remain unchanged.
+## 已有数据集
 
-## Recommended Approach
+原始数据集已经在项目中：
 
-Use YOLOv8 classification rather than YOLOv8 object detection.
+- `dataset/PetImages/Cat`：12,500 张 JPG 图片
+- `dataset/PetImages/Dog`：12,500 张 JPG 图片
 
-The user goal is binary image classification: decide whether the animal is a cat or a dog. Object detection would require bounding-box labels and would add unnecessary annotation and training complexity. A YOLOv8 classification model accepts class-folder data directly and fits this problem well.
+数据集中包含 `Thumbs.db` 等非图片文件，也可能包含少量损坏图片。数据准备脚本必须验证图片能否被打开，坏图片只跳过，不中断整个流程。
 
-## Project Structure
+原始数据集保持不变。
 
-The implementation will add:
+## 推荐方案
 
-- `requirements.txt`: Python dependencies for Ultralytics and image validation.
-- `scripts/prepare_dataset.py`: Validate raw images and create a train/validation classification dataset.
-- `scripts/train.py`: Train `yolov8n-cls.pt` on the prepared dataset with Mac-friendly defaults.
-- `scripts/predict.py`: Run inference on a single image and print the predicted label and confidence.
-- `README.md`: Setup, preparation, training, and prediction commands.
-- `.gitignore`: Ignore virtual environments, generated datasets, training outputs, and model artifacts.
+使用 YOLOv8 分类模型，而不是 YOLOv8 检测模型。
 
-Generated training data will live under:
+原因是当前目标是“判断整张图片是猫还是狗”。分类模型回答“这张图属于哪个类别”，检测模型回答“物体在哪里”。检测模型需要额外标注框，对这个任务来说成本更高，也没有必要。
+
+## 项目结构
+
+核心文件：
+
+- `README.md`：中文新手教程，包含 Conda 环境、准备数据、训练、预测和验证说明。
+- `requirements.txt`：备用依赖清单，不作为当前训练入口。
+- `scripts/prepare_dataset.py`：验证图片并生成训练/验证数据集。
+- `scripts/train.py`：调用 Ultralytics YOLOv8 分类训练。
+- `scripts/predict.py`：加载训练好的权重并预测单张图片。
+- `scripts/train_yolo8_conda.sh`：使用 `yolo8` Conda 环境训练。
+- `scripts/predict_yolo8_conda.sh`：使用 `yolo8` Conda 环境预测。
+- `.gitignore`：忽略数据集副本、训练输出、模型权重、缓存和虚拟环境。
+
+准备后的训练数据目录：
 
 - `data/cat_dog_cls/train/Cat`
 - `data/cat_dog_cls/train/Dog`
 - `data/cat_dog_cls/val/Cat`
 - `data/cat_dog_cls/val/Dog`
 
-## Data Preparation
+## 数据准备
 
-`scripts/prepare_dataset.py` will:
+`scripts/prepare_dataset.py` 负责：
 
-1. Read source images from `dataset/PetImages/Cat` and `dataset/PetImages/Dog`.
-2. Ignore non-JPG files such as `Thumbs.db`.
-3. Open and verify images using Pillow.
-4. Split valid images into train and validation sets with a fixed random seed.
-5. Copy valid images into the YOLOv8 classification folder layout.
-6. Print a summary of accepted and skipped files per class.
+1. 从 `dataset/PetImages/Cat` 和 `dataset/PetImages/Dog` 读取原始图片。
+2. 忽略 `Thumbs.db` 等非 JPG 文件。
+3. 使用 Pillow 验证图片是否可读。
+4. 使用固定随机种子拆分训练集和验证集。
+5. 把可用图片复制到 YOLOv8 分类目录结构。
+6. 输出每个类别的可用、跳过、训练、验证数量。
 
-Default split:
+默认拆分比例：
 
-- Train: 80%
-- Validation: 20%
+- 训练集：80%
+- 验证集：20%
 
-The script will be idempotent enough for normal use: it can recreate or update the prepared dataset from the raw dataset.
+## 训练
 
-## Training
+训练入口优先使用包装脚本：
 
-`scripts/train.py` will use the Ultralytics Python API:
+```bash
+./scripts/train_yolo8_conda.sh
+```
 
-- Model: `yolov8n-cls.pt`
-- Dataset: `data/cat_dog_cls`
-- Device default: `mps`
-- Image size default: `224`
-- Epochs default: `10`
-- Batch default: `32`
-- Project output: `runs/classify`
-- Run name default: `cat_dog_yolov8n`
+它内部执行：
 
-These defaults prioritize a reliable first local run on the Mac. Users can override them from command-line arguments for longer or larger training runs.
+```bash
+conda run -n yolo8 python scripts/train.py
+```
 
-## Prediction
+训练默认参数：
 
-`scripts/predict.py` will:
+- 模型：`yolov8n-cls.pt`
+- 数据集：`data/cat_dog_cls`
+- 设备：`cpu`
+- 图片尺寸：`224`
+- 轮数：`10`
+- 批大小：`32`
+- 运行名：`cat_dog_yolov8n`
+- 默认输出：`runs/classify/cat_dog_yolov8n`
 
-1. Load a trained model path, defaulting to `runs/classify/cat_dog_yolov8n/weights/best.pt`.
-2. Run prediction on a user-supplied image.
-3. Print the top class name and confidence.
+## 预测
 
-The script will fail with a clear message if the model file or image file is missing.
+预测入口优先使用包装脚本：
 
-## Error Handling
+```bash
+./scripts/predict_yolo8_conda.sh path/to/image.jpg
+```
 
-Preparation should report skipped files rather than stopping the whole run for one bad image.
+默认模型路径：
 
-Training should validate that the prepared dataset exists and contains `train` and `val` folders before invoking Ultralytics.
+```text
+runs/classify/cat_dog_yolov8n/weights/best.pt
+```
 
-Prediction should validate input paths before loading the model.
+脚本会输出预测类别和置信度。
 
-## Verification
+## 错误处理
 
-Before considering the implementation complete:
+数据准备时，单张坏图不会导致整个任务失败，只会被统计为 skipped。
 
-1. Run the dataset preparation script on the local dataset.
-2. Confirm the prepared dataset has both classes in train and validation folders.
-3. Run a lightweight smoke test for training with a very small epoch count if dependencies are available.
-4. Run prediction with a sample image if a trained model exists.
+训练前会检查准备后的数据集目录是否存在，并检查 `train` 和 `val` 目录是否存在。
 
-If dependencies cannot be installed or model weights cannot be downloaded because of network restrictions, the code and documentation will still make that requirement explicit.
+预测前会检查模型文件和图片文件是否存在，并用中文错误说明缺少哪个文件。
+
+## 验证
+
+当前项目已经完成：
+
+1. 使用真实数据集准备 `data/cat_dog_cls`。
+2. 确认猫狗训练/验证目录都存在。
+3. 使用临时小数据集完成 YOLOv8 CPU 冒烟训练。
+4. 使用冒烟训练模型完成一次单图预测。
+5. 确认 `yolo8` Conda 环境中有 Ultralytics 和 Torch。
+
+冒烟训练只证明流程能跑通，不代表模型已经训练好。正式模型需要使用完整数据集运行训练命令。

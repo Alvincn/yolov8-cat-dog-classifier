@@ -586,3 +586,31 @@ git commit -m "Document local verification results"
 - 使用 `/tmp/catdog_yolov8_smoke` 小样本数据集完成 1 个 epoch 的 YOLOv8 CPU 冒烟训练。
 - 使用冒烟训练产出的 `best.pt` 跑通 `scripts/predict.py`。
 - 为脚本入口、缓存目录、默认 CPU 设备补充了回归测试。
+
+## 2026-06-28 Conda 环境调整
+
+用户要求不要直接使用全局环境训练。当前机器的 Conda 中已有 YOLOv8 环境：
+
+- 环境名：`yolo8`
+- Python：3.8.20
+- Ultralytics：8.4.80
+- Torch：2.4.1
+- MPS：不可用
+
+因此当前训练和预测入口调整为包装脚本：
+
+```bash
+./scripts/train_yolo8_conda.sh
+./scripts/predict_yolo8_conda.sh path/to/image.jpg
+```
+
+包装脚本内部使用：
+
+```bash
+conda run -n yolo8 python scripts/train.py
+conda run -n yolo8 python scripts/predict.py path/to/image.jpg
+```
+
+这样做的原因是：新手最容易在终端里忘记当前 Python 来自哪里。包装脚本把“必须使用 yolo8 环境”固定下来，减少误用全局 Python 或其他虚拟环境的风险。
+
+`README.md` 和设计文档已经同步更新为 Conda 优先说明。项目中保留 `requirements.txt`，但它现在只是备用依赖清单，不是当前推荐训练入口。
