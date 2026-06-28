@@ -68,3 +68,9 @@ python scripts/predict.py dataset/PetImages/Cat/0.jpg
 ```
 
 脚本会输出模型认为这张图片是 `Cat` 还是 `Dog`，以及对应置信度。
+
+预测脚本默认读取训练输出中的 `best.pt`。如果你的模型文件在其他位置，可以这样指定：
+
+```bash
+python scripts/predict.py path/to/image.jpg --model path/to/best.pt
+```
