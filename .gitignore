@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+
+data/cat_dog_cls/
+runs/
+*.pt
+*.onnx
+
+.DS_Store
+Thumbs.db
