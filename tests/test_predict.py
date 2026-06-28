@@ -21,7 +21,7 @@ def test_validate_input_paths_requires_model_and_image(tmp_path):
     assert validate_input_paths(model, image) == (model, image)
 
 
-def test_build_parser_defaults_to_cpu_device():
+def test_build_parser_defaults_to_auto_device():
     args = build_parser().parse_args(["sample.jpg"])
 
-    assert args.device == "cpu"
+    assert args.device == "auto"

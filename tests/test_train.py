@@ -29,7 +29,7 @@ def test_build_parser_uses_non_nested_default_output_dir():
 
     assert args.project is None
     assert args.name == "cat_dog_yolov8n"
-    assert args.device == "cpu"
+    assert args.device == "auto"
 
 
 def test_log_training_start_prints_human_readable_progress(capsys):

@@ -614,3 +614,21 @@ conda run -n yolo8 python scripts/predict.py path/to/image.jpg
 这样做的原因是：新手最容易在终端里忘记当前 Python 来自哪里。包装脚本把“必须使用 yolo8 环境”固定下来，减少误用全局 Python 或其他虚拟环境的风险。
 
 `README.md` 和设计文档已经同步更新为 Conda 优先说明。项目中保留 `requirements.txt`，但它现在只是备用依赖清单，不是当前推荐训练入口。
+
+## 2026-06-28 MPS/GPU 调整
+
+用户在自己的终端中重新验证 `yolo8` 环境，得到：
+
+```text
+torch.backends.mps.is_built() = True
+torch.backends.mps.is_available() = True
+```
+
+这说明 M4 芯片的 Apple GPU 可以通过 PyTorch MPS 后端使用。项目因此调整为：
+
+- `scripts/train.py` 默认 `--device auto`
+- `scripts/predict.py` 默认 `--device auto`
+- `auto` 会优先选择 `mps`
+- 如果当前运行上下文中 MPS 不可用，则自动退回 `cpu`
+
+这样既能在用户终端中使用 GPU 训练，又能在某些不支持 MPS 的上下文中继续稳定运行。

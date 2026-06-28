@@ -30,7 +30,7 @@
 - Python: 3.8.20
 - Ultralytics: 8.4.80
 - Torch: 2.4.1
-- MPS: 不可用，所以默认继续用 CPU 训练
+- MPS: 你的终端中已确认可用，所以训练会优先使用 Apple GPU
 
 你可以这样确认环境是否存在：
 
@@ -38,6 +38,7 @@
 conda env list
 conda run -n yolo8 python --version
 conda run -n yolo8 python -c "import ultralytics; print(ultralytics.__version__)"
+conda run -n yolo8 python -c "import torch; print(torch.backends.mps.is_built()); print(torch.backends.mps.is_available())"
 ```
 
 项目里仍然保留 `requirements.txt`，它只是依赖清单和备用参考，不是当前推荐入口。正式训练和预测请使用 `yolo8` Conda 环境。
@@ -88,20 +89,29 @@ conda run --no-capture-output -n yolo8 python scripts/train.py
 训练轮数: 10
 图片尺寸: 224
 批大小: 32
-设备: cpu
+设备: mps
 ```
 
-后面 Ultralytics 会继续输出每个 epoch 的训练进度、loss、准确率和模型保存路径。CPU 训练时某些阶段会比较慢，尤其是扫描图片、建立缓存、验证集评估时，短时间没有新输出不一定代表程序死掉。
+后面 Ultralytics 会继续输出每个 epoch 的训练进度、loss、准确率和模型保存路径。训练时某些阶段会比较慢，尤其是扫描图片、建立缓存、验证集评估时，短时间没有新输出不一定代表程序死掉。
 
-当前脚本默认使用 `device=cpu`。原因是 `yolo8` Conda 环境中已经验证过 Torch 可以训练，但 `torch.backends.mps.is_available()` 返回 `False`，也就是当前 Conda 环境暂时不能使用 Apple Silicon 的 MPS 加速。
+当前脚本默认使用 `device=auto`。它会在运行时自动判断：
 
-如果你之后换了支持 MPS 的 PyTorch 环境，可以这样尝试加速：
+- 如果 `torch.backends.mps.is_available()` 是 `True`，就使用 `mps`，也就是 Apple GPU。
+- 如果 MPS 不可用，就自动退回 `cpu`。
+
+你的 M4 芯片是有 GPU 的。在 Mac 上，PyTorch 不是通过 NVIDIA CUDA 使用 GPU，而是通过 Apple 的 MPS 后端使用 GPU。
+
+如果你想强制使用 MPS，可以这样运行：
 
 ```bash
 ./scripts/train_yolo8_conda.sh --device mps
 ```
 
-如果 MPS 报错，就继续使用默认 CPU。CPU 会慢一些，但更稳定。
+如果你想强制使用 CPU，可以这样运行：
+
+```bash
+./scripts/train_yolo8_conda.sh --device cpu
+```
 
 训练完成后，最好的模型通常会保存在：
 

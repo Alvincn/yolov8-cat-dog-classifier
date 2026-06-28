@@ -14,9 +14,9 @@
 - Python：3.8.20
 - Ultralytics：8.4.80
 - Torch：2.4.1
-- MPS：不可用
+- MPS：用户终端中已确认可用
 
-因此脚本默认使用 `device=cpu`。如果以后 `yolo8` 环境或新的 Conda 环境支持 MPS，可以手动传入 `--device mps`。
+因此脚本默认使用 `device=auto`。运行时会优先使用 Apple GPU，也就是 `mps`；如果当前运行上下文中 MPS 不可用，则自动退回 `cpu`。
 
 ## 已有数据集
 
@@ -89,7 +89,7 @@ conda run -n yolo8 python scripts/train.py
 
 - 模型：`yolov8n-cls.pt`
 - 数据集：`data/cat_dog_cls`
-- 设备：`cpu`
+- 设备：`auto`，优先 MPS，失败时退回 CPU
 - 图片尺寸：`224`
 - 轮数：`10`
 - 批大小：`32`

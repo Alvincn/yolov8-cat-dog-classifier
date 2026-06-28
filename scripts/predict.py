@@ -24,7 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="使用训练好的模型预测猫或狗")
     parser.add_argument("image", type=Path)
     parser.add_argument("--model", type=Path, default=DEFAULT_MODEL)
-    parser.add_argument("--device", default="cpu")
+    parser.add_argument("--device", default="auto")
     return parser
 
 
@@ -34,14 +34,16 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     from scripts.runtime import configure_runtime_environment
+    from scripts.runtime import resolve_device
 
     configure_runtime_environment()
     from ultralytics import YOLO
 
     args = parse_args()
+    device = resolve_device(args.device)
     model_path, image_path = validate_input_paths(args.model, args.image)
     model = YOLO(str(model_path))
-    results = model.predict(str(image_path), device=args.device, verbose=False)
+    results = model.predict(str(image_path), device=device, verbose=False)
     probs = results[0].probs
     class_index = int(probs.top1)
     confidence = float(probs.top1conf)
