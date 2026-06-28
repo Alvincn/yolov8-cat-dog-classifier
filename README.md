@@ -19,7 +19,11 @@
 
 ## Conda 环境
 
-不要直接使用全局 Python 环境训练。当前电脑的 Conda 里已经有一个 YOLOv8 环境，名字是 `yolo8`。
+本项目训练和预测只使用 Conda 环境 `yolo8`。
+
+不要直接使用全局 Python 环境，也不需要在 README 的训练流程里创建新的 `venv`。这样做是为了避免机器学习依赖混在一起，导致 YOLOv8、Torch 或 OpenCV 版本互相冲突。
+
+当前电脑的 Conda 里已经有一个 YOLOv8 环境，名字是 `yolo8`。
 
 我已经验证过这个环境：
 
@@ -36,7 +40,15 @@ conda run -n yolo8 python --version
 conda run -n yolo8 python -c "import ultralytics; print(ultralytics.__version__)"
 ```
 
-项目里仍然保留 `requirements.txt`，它只是依赖清单和备用参考；正式训练和预测请使用 `yolo8` Conda 环境。
+项目里仍然保留 `requirements.txt`，它只是依赖清单和备用参考，不是当前推荐入口。正式训练和预测请使用 `yolo8` Conda 环境。
+
+最常用的三个命令是：
+
+```bash
+conda run -n yolo8 python scripts/prepare_dataset.py
+./scripts/train_yolo8_conda.sh
+./scripts/predict_yolo8_conda.sh dataset/PetImages/Cat/0.jpg
+```
 
 ## 准备数据
 
