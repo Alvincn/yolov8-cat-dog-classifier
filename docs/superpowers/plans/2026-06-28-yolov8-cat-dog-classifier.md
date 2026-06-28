@@ -1,6 +1,6 @@
 # YOLOv8 猫狗分类器 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 搭建一个可以在本机 Mac 上训练 YOLOv8 猫狗分类模型的完整小项目。
 
@@ -29,7 +29,7 @@
 - Create: `.gitignore`
 - Create: `README.md`
 
-- [ ] **Step 1: 创建依赖文件**
+- [x] **Step 1: 创建依赖文件**
 
 写入 `requirements.txt`：
 
@@ -39,7 +39,7 @@ pillow>=10.0
 pytest>=8.0
 ```
 
-- [ ] **Step 2: 创建忽略规则**
+- [x] **Step 2: 创建忽略规则**
 
 写入 `.gitignore`：
 
@@ -57,7 +57,7 @@ runs/
 Thumbs.db
 ```
 
-- [ ] **Step 3: 创建中文 README 初稿**
+- [x] **Step 3: 创建中文 README 初稿**
 
 写入 `README.md`，包含：
 
@@ -107,13 +107,13 @@ python scripts/predict.py dataset/PetImages/Cat/0.jpg
 ```
 ```
 
-- [ ] **Step 4: 检查基础文件**
+- [x] **Step 4: 检查基础文件**
 
 Run: `test -f requirements.txt && test -f .gitignore && test -f README.md`
 
 Expected: exit code 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add requirements.txt .gitignore README.md
@@ -126,7 +126,7 @@ git commit -m "Add project setup docs"
 - Create: `scripts/prepare_dataset.py`
 - Create: `tests/test_prepare_dataset.py`
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 创建 `tests/test_prepare_dataset.py`，测试准备逻辑会跳过坏图片并生成训练/验证目录：
 
@@ -166,13 +166,13 @@ def test_prepare_dataset_splits_valid_images_and_skips_invalid_files(tmp_path):
     assert len(list((output / "val" / "Dog").glob("*.jpg"))) == 2
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `python3 -m pytest tests/test_prepare_dataset.py -v`
 
 Expected: FAIL because `scripts.prepare_dataset` does not exist yet.
 
-- [ ] **Step 3: 实现数据准备脚本**
+- [x] **Step 3: 实现数据准备脚本**
 
 创建 `scripts/prepare_dataset.py`，包含：
 
@@ -283,13 +283,13 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 Run: `python3 -m pytest tests/test_prepare_dataset.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/prepare_dataset.py tests/test_prepare_dataset.py
@@ -303,7 +303,7 @@ git commit -m "Add dataset preparation script"
 - Create: `tests/test_train.py`
 - Modify: `README.md`
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 创建 `tests/test_train.py`：
 
@@ -332,13 +332,13 @@ def test_validate_dataset_dir_requires_train_and_val_folders(tmp_path):
     assert validate_dataset_dir(dataset) == dataset
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `python3 -m pytest tests/test_train.py -v`
 
 Expected: FAIL because `scripts.train` does not exist yet.
 
-- [ ] **Step 3: 实现训练脚本**
+- [x] **Step 3: 实现训练脚本**
 
 创建 `scripts/train.py`：
 
@@ -393,13 +393,13 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 Run: `python3 -m pytest tests/test_train.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: 更新 README 的训练说明**
+- [x] **Step 5: 更新 README 的训练说明**
 
 补充说明：
 
@@ -411,7 +411,7 @@ python scripts/train.py --device cpu
 ```
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/train.py tests/test_train.py README.md
@@ -425,7 +425,7 @@ git commit -m "Add YOLOv8 training script"
 - Create: `tests/test_predict.py`
 - Modify: `README.md`
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 创建 `tests/test_predict.py`：
 
@@ -454,13 +454,13 @@ def test_validate_input_paths_requires_model_and_image(tmp_path):
     assert validate_input_paths(model, image) == (model, image)
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `python3 -m pytest tests/test_predict.py -v`
 
 Expected: FAIL because `scripts.predict` does not exist yet.
 
-- [ ] **Step 3: 实现预测脚本**
+- [x] **Step 3: 实现预测脚本**
 
 创建 `scripts/predict.py`：
 
@@ -509,13 +509,13 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 Run: `python3 -m pytest tests/test_predict.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: 更新 README 的预测说明**
+- [x] **Step 5: 更新 README 的预测说明**
 
 补充说明：
 
@@ -527,7 +527,7 @@ python scripts/predict.py path/to/image.jpg --model path/to/best.pt
 ```
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/predict.py tests/test_predict.py README.md
@@ -539,37 +539,50 @@ git commit -m "Add prediction script"
 **Files:**
 - Modify: `README.md`
 
-- [ ] **Step 1: 运行全部单元测试**
+- [x] **Step 1: 运行全部单元测试**
 
 Run: `python3 -m pytest -v`
 
 Expected: all tests PASS.
 
-- [ ] **Step 2: 运行数据准备脚本**
+- [x] **Step 2: 运行数据准备脚本**
 
 Run: `python3 scripts/prepare_dataset.py`
 
 Expected: prints valid/skipped/train/val counts for `Cat` and `Dog`.
 
-- [ ] **Step 3: 检查准备后的目录**
+- [x] **Step 3: 检查准备后的目录**
 
 Run: `find data/cat_dog_cls -maxdepth 2 -type d -print`
 
 Expected: output includes train/val and Cat/Dog class directories.
 
-- [ ] **Step 4: 如果依赖和权重下载可用，运行 1 个 epoch 训练冒烟测试**
+- [x] **Step 4: 如果依赖和权重下载可用，运行 1 个 epoch 训练冒烟测试**
 
 Run: `python3 scripts/train.py --epochs 1 --name smoke_test`
 
 Expected: training starts and writes output under `runs/classify/smoke_test`.
 
-- [ ] **Step 5: 根据验证结果更新 README**
+- [x] **Step 5: 根据验证结果更新 README**
 
 如果因为 Python 版本、依赖安装或网络限制无法训练，在 README 写清楚原因和下一步建议。
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add README.md
 git commit -m "Document local verification results"
 ```
+
+## 执行备注
+
+实际执行时发现两点环境差异，并已更新实现和 README：
+
+- 当前 Python/Torch 环境中 `torch.backends.mps.is_available()` 返回 `False`，所以训练和预测脚本默认设备从 `mps` 改为 `cpu`。如果以后安装了支持 MPS 的 PyTorch 环境，可以手动加 `--device mps`。
+- Ultralytics 的默认分类输出目录已经是 `runs/classify`，所以训练脚本默认不再传 `project`，只传 `name`，避免生成 `runs/classify/runs/...` 这种重复路径。
+
+已完成的额外验证：
+
+- 使用 `/tmp/catdog_yolov8_smoke` 小样本数据集完成 1 个 epoch 的 YOLOv8 CPU 冒烟训练。
+- 使用冒烟训练产出的 `best.pt` 跑通 `scripts/predict.py`。
+- 为脚本入口、缓存目录、默认 CPU 设备补充了回归测试。

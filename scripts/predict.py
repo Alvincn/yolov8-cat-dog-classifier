@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 
 DEFAULT_MODEL = Path("runs/classify/cat_dog_yolov8n/weights/best.pt")
@@ -15,15 +20,22 @@ def validate_input_paths(model_path: Path, image_path: Path) -> tuple[Path, Path
     return model_path, image_path
 
 
-def parse_args() -> argparse.Namespace:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="使用训练好的模型预测猫或狗")
     parser.add_argument("image", type=Path)
     parser.add_argument("--model", type=Path, default=DEFAULT_MODEL)
-    parser.add_argument("--device", default="mps")
-    return parser.parse_args()
+    parser.add_argument("--device", default="cpu")
+    return parser
+
+
+def parse_args() -> argparse.Namespace:
+    return build_parser().parse_args()
 
 
 def main() -> None:
+    from scripts.runtime import configure_runtime_environment
+
+    configure_runtime_environment()
     from ultralytics import YOLO
 
     args = parse_args()

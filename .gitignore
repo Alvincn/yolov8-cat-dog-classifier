@@ -1,7 +1,9 @@
 .venv/
+.cache/
 __pycache__/
 .pytest_cache/
 
+dataset/
 data/cat_dog_cls/
 runs/
 *.pt
