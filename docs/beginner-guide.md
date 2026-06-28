@@ -546,6 +546,20 @@ device=auto
 - MPS 可用时，自动使用 `mps`
 - MPS 不可用时，自动退回 `cpu`
 
+使用 `mps` 训练时，脚本还会启用一个兼容补丁：
+
+```text
+MPS 训练会启用兼容补丁，避免 Apple GPU 验证阶段的 autocast 报错。
+```
+
+AMP 可以简单理解成“用更省显存、更快的数字格式训练”。但是在当前这个 YOLOv8、PyTorch、MPS 组合里，验证阶段可能会报：
+
+```text
+RuntimeError: unsupported scalarType
+```
+
+这个错误不是说你的 M4 没有 GPU，也不是说模型训练完全失败。它的意思是：训练已经跑到了验证阶段，但 MPS 的 AMP/autocast 对某个数字类型支持不好。我们在脚本里对 `mps` 自动设置 `amp=False`，并让 Ultralytics 在 MPS 上跳过容易出错的 autocast 上下文，就是为了让 Apple GPU 训练更稳定。
+
 如果你想强制使用 Apple GPU：
 
 ```bash
@@ -661,6 +675,23 @@ Conda 环境就像一个独立小房间。我们把 YOLOv8 相关依赖放在 `y
 ```bash
 ./scripts/train_yolo8_conda.sh --epochs 10
 ```
+
+### MPS 报 `unsupported scalarType` 怎么办？
+
+这个项目的训练脚本已经处理了这个问题。只要重新运行训练命令即可：
+
+```bash
+./scripts/train_yolo8_conda.sh --epochs 1 --device mps --name cat_dog_yolov8n_mps_test
+```
+
+你应该会看到：
+
+```text
+设备: mps
+MPS 训练会启用兼容补丁，避免 Apple GPU 验证阶段的 autocast 报错。
+```
+
+这表示仍然使用 Apple GPU，但会避开容易触发兼容问题的 AMP/autocast。
 
 ### 我可以中断训练吗？
 

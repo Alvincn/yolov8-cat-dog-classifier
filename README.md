@@ -101,6 +101,14 @@ conda run --no-capture-output -n yolo8 python scripts/train.py
 
 你的 M4 芯片是有 GPU 的。在 Mac 上，PyTorch 不是通过 NVIDIA CUDA 使用 GPU，而是通过 Apple 的 MPS 后端使用 GPU。
 
+使用 MPS 训练时，脚本会启用一个兼容补丁：
+
+```text
+MPS 训练会启用兼容补丁，避免 Apple GPU 验证阶段的 autocast 报错。
+```
+
+这是因为当前 PyTorch/Ultralytics 组合在 MPS 验证阶段可能出现 `RuntimeError: unsupported scalarType`。脚本会关闭 AMP，并让 Ultralytics 在 MPS 上跳过容易出错的 autocast 上下文。这样仍然使用 MPS/GPU 训练，只是避开这处兼容性问题。
+
 如果你想强制使用 MPS，可以这样运行：
 
 ```bash

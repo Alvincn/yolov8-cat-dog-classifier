@@ -21,6 +21,7 @@ def validate_dataset_dir(dataset_dir: Path) -> Path:
 
 def train_model(args: argparse.Namespace) -> None:
     from scripts.runtime import configure_runtime_environment
+    from scripts.runtime import patch_ultralytics_mps_autocast
     from scripts.runtime import resolve_device
 
     configure_runtime_environment()
@@ -28,18 +29,28 @@ def train_model(args: argparse.Namespace) -> None:
 
     dataset_dir = validate_dataset_dir(args.data)
     device = resolve_device(args.device)
+    patch_ultralytics_mps_autocast(device)
     log_training_start(args, device)
     model = YOLO(args.model)
-    model.train(
-        data=str(dataset_dir),
-        epochs=args.epochs,
-        imgsz=args.imgsz,
-        batch=args.batch,
-        device=device,
-        project=args.project,
-        name=args.name,
-    )
+    model.train(**build_train_options(args, dataset_dir, device))
     print("训练命令已结束。请查看 runs/classify 目录中的训练结果。", flush=True)
+
+
+def build_train_options(
+    args: argparse.Namespace, dataset_dir: Path, resolved_device: str
+) -> dict[str, object]:
+    options: dict[str, object] = {
+        "data": str(dataset_dir),
+        "epochs": args.epochs,
+        "imgsz": args.imgsz,
+        "batch": args.batch,
+        "device": resolved_device,
+        "project": args.project,
+        "name": args.name,
+    }
+    if resolved_device == "mps":
+        options["amp"] = False
+    return options
 
 
 def log_training_start(args: argparse.Namespace, resolved_device: str | None = None) -> None:
@@ -53,6 +64,8 @@ def log_training_start(args: argparse.Namespace, resolved_device: str | None = N
     print(f"设备: {device}", flush=True)
     if args.device == "auto":
         print("设备选择: auto，会优先使用 Apple GPU(MPS)，不可用时退回 CPU。", flush=True)
+    if device == "mps":
+        print("MPS 训练会启用兼容补丁，避免 Apple GPU 验证阶段的 autocast 报错。", flush=True)
     print(f"运行名: {args.name}", flush=True)
     print("接下来 Ultralytics 会输出每个 epoch 的 loss、准确率和保存路径。", flush=True)
     print("如果长时间没有新输出，通常是在扫描图片、建立缓存或进行 CPU 训练。", flush=True)

@@ -4,6 +4,7 @@ import pytest
 
 from scripts.train import validate_dataset_dir
 from scripts.train import build_parser
+from scripts.train import build_train_options
 from scripts.train import log_training_start
 
 
@@ -30,6 +31,24 @@ def test_build_parser_uses_non_nested_default_output_dir():
     assert args.project is None
     assert args.name == "cat_dog_yolov8n"
     assert args.device == "auto"
+
+
+def test_build_train_options_disables_amp_on_mps(tmp_path):
+    args = build_parser().parse_args(
+        [
+            "--data",
+            str(tmp_path),
+            "--epochs",
+            "1",
+            "--device",
+            "mps",
+        ]
+    )
+
+    options = build_train_options(args, tmp_path, "mps")
+
+    assert options["device"] == "mps"
+    assert options["amp"] is False
 
 
 def test_log_training_start_prints_human_readable_progress(capsys):
