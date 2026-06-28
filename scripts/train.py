@@ -26,6 +26,7 @@ def train_model(args: argparse.Namespace) -> None:
     from ultralytics import YOLO
 
     dataset_dir = validate_dataset_dir(args.data)
+    log_training_start(args)
     model = YOLO(args.model)
     model.train(
         data=str(dataset_dir),
@@ -36,6 +37,20 @@ def train_model(args: argparse.Namespace) -> None:
         project=args.project,
         name=args.name,
     )
+    print("训练命令已结束。请查看 runs/classify 目录中的训练结果。", flush=True)
+
+
+def log_training_start(args: argparse.Namespace) -> None:
+    print("开始训练 YOLOv8 猫狗分类模型", flush=True)
+    print(f"数据集: {args.data}", flush=True)
+    print(f"模型: {args.model}", flush=True)
+    print(f"训练轮数: {args.epochs}", flush=True)
+    print(f"图片尺寸: {args.imgsz}", flush=True)
+    print(f"批大小: {args.batch}", flush=True)
+    print(f"设备: {args.device}", flush=True)
+    print(f"运行名: {args.name}", flush=True)
+    print("接下来 Ultralytics 会输出每个 epoch 的 loss、准确率和保存路径。", flush=True)
+    print("如果长时间没有新输出，通常是在扫描图片、建立缓存或进行 CPU 训练。", flush=True)
 
 
 def build_parser() -> argparse.ArgumentParser:

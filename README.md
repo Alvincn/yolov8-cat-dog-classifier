@@ -72,8 +72,26 @@ conda run -n yolo8 python scripts/prepare_dataset.py
 上面这个包装脚本内部实际执行的是：
 
 ```bash
-conda run -n yolo8 python scripts/train.py
+conda run --no-capture-output -n yolo8 python scripts/train.py
 ```
+
+`--no-capture-output` 的作用是让 YOLOv8 的训练日志实时显示在终端里。否则 Conda 可能会暂时缓存输出，看起来就像训练脚本卡住了。
+
+训练开始后，你会先看到类似下面的日志：
+
+```text
+[1/2] 使用 Conda 环境 yolo8 启动训练...
+[2/2] 下面开始显示 YOLOv8 训练日志，请保持终端窗口打开。
+开始训练 YOLOv8 猫狗分类模型
+数据集: data/cat_dog_cls
+模型: yolov8n-cls.pt
+训练轮数: 10
+图片尺寸: 224
+批大小: 32
+设备: cpu
+```
+
+后面 Ultralytics 会继续输出每个 epoch 的训练进度、loss、准确率和模型保存路径。CPU 训练时某些阶段会比较慢，尤其是扫描图片、建立缓存、验证集评估时，短时间没有新输出不一定代表程序死掉。
 
 当前脚本默认使用 `device=cpu`。原因是 `yolo8` Conda 环境中已经验证过 Torch 可以训练，但 `torch.backends.mps.is_available()` 返回 `False`，也就是当前 Conda 环境暂时不能使用 Apple Silicon 的 MPS 加速。
 

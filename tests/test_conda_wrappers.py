@@ -4,7 +4,7 @@ from pathlib import Path
 def test_conda_train_wrapper_uses_yolo8_environment():
     content = Path("scripts/train_yolo8_conda.sh").read_text()
 
-    assert "conda run -n yolo8" in content
+    assert "conda run --no-capture-output -n yolo8" in content
     assert "python scripts/train.py" in content
 
 
