@@ -147,6 +147,50 @@ runs/classify/cat_dog_yolov8n/weights/best.pt
 ./scripts/predict_yolo8_conda.sh path/to/image.jpg --model path/to/best.pt --device mps
 ```
 
+## 启动 Web 页面预测
+
+项目里还有一个简单的 Web 页面：
+
+```text
+web/index.html
+```
+
+它的作用是让你在浏览器里上传图片，然后由后端调用训练好的 YOLOv8 模型，返回这张图片更像猫还是狗。
+
+启动服务：
+
+```bash
+conda run --no-capture-output -n yolo8 python server.py --model runs/classify/cat_dog_yolov8n_mps_test-3/weights/best.pt --device mps
+```
+
+然后打开：
+
+```text
+http://127.0.0.1:8000
+```
+
+如果你已经有正式训练的模型，可以把 `--model` 换成正式模型路径，例如：
+
+```bash
+conda run --no-capture-output -n yolo8 python server.py --model runs/classify/cat_dog_yolov8n_mps_final/weights/best.pt --device mps
+```
+
+后端接口是：
+
+```text
+POST /predict
+```
+
+前端会把图片作为 `image` 字段上传。后端返回类似：
+
+```json
+{
+  "class_name": "Dog",
+  "label": "狗",
+  "confidence": 0.97
+}
+```
+
 ## 已完成的本地验证
 
 当前项目已经完成这些验证：
